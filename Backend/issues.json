@@ -1,0 +1,524 @@
+{
+  "clients": [
+    {
+      "client_name": "Bluestone Inc",
+      "users": [
+        {
+          "user_id": "default_user",
+          "issues": [
+            {
+              "issue_id": "ISSUE_bs_001",
+              "user_id": "default_user",
+              "client_name": "Bluestone Inc",
+              "created_at": "2026-04-13T12:18:00Z",
+              "last_updated": "2026-04-13T13:10:00Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "Authentication error",
+              "sub_issue_type": "JWT token invalid or expired",
+              "product_area": "API",
+              "issue_summary": "Why is my JWT token not working?",
+              "tags": ["auth", "jwt"],
+              "message_count": 2,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_bs_001",
+                  "timestamp": "2026-04-13T12:18:10Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why is my JWT token not working?",
+                  "bot_response": "Diagnosis: JWT authentication failure. Root Cause: Token may be expired or signed with incorrect key. Suggested Fixes: Re-authenticate and verify signing key."
+                },
+                {
+                  "event_id": "EVT_bs_003",
+                  "timestamp": "2026-04-13T12:40:00Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why am I getting authentication errors in Cortexa?",
+                  "bot_response": "Diagnosis: Invalid credentials. Root Cause: Incorrect API key or expired token. Suggested Fixes: Regenerate API key and ensure proper header format."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "client_name": "Northwind Treasury Solutions",
+      "users": [
+        {
+          "user_id": "default_user",
+          "issues": [
+            {
+              "issue_id": "ISSUE_nw_001",
+              "user_id": "default_user",
+              "client_name": "Northwind Treasury Solutions",
+              "created_at": "2026-04-13T12:24:00Z",
+              "last_updated": "2026-04-13T12:50:00Z",
+              "resolved_at": "2026-04-13T12:50:00Z",
+              "status": "CLOSED",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": true,
+              "category": "ISSUE",
+              "issue_type": "File upload failure",
+              "sub_issue_type": "Unsupported file format",
+              "product_area": "Document Management",
+              "issue_summary": "Why is my file upload failing in Cortexa?",
+              "tags": ["upload"],
+              "message_count": 1,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": "File format corrected to supported type",
+                "resolution_type": "CONFIG_FIX",
+                "resolved_by": "Arthur W"
+              },
+              "history": [
+                {
+                  "event_id": "EVT_nw_001",
+                  "timestamp": "2026-04-13T12:24:10Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why is my file upload failing in Cortexa?",
+                  "bot_response": "Diagnosis: Unsupported file type. Root Cause: File format not supported. Suggested Fixes: Upload PDF, DOCX, or TXT only."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "client_name": "Atlas FinServ Holdings",
+      "users": [
+        {
+          "user_id": "default_user",
+          "issues": [
+            {
+              "issue_id": "ISSUE_at_001",
+              "user_id": "default_user",
+              "client_name": "Atlas FinServ Holdings",
+              "created_at": "2026-04-13T12:25:00Z",
+              "last_updated": "2026-04-13T12:25:00Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "Data mapping issue",
+              "sub_issue_type": "ISO format mismatch in document metadata",
+              "product_area": "Document Management",
+              "issue_summary": "ISO format mismatch causing incorrect data mapping",
+              "tags": ["data", "mapping", "metadata"],
+              "message_count": 1,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_at_002",
+                  "timestamp": "2026-04-13T12:25:00Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why am I not getting relevant answers from Cortexa?",
+                  "bot_response": "Diagnosis: Poor embedding match. Root Cause: Improper document chunking or missing metadata. Suggested Fixes: Improve chunking and indexing."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "client_name": "BluePeak Payments Inc.",
+      "users": [
+        {
+          "user_id": "default_user",
+          "issues": [
+            {
+              "issue_id": "ISSUE_bp_001",
+              "user_id": "default_user",
+              "client_name": "BluePeak Payments Inc.",
+              "created_at": "2026-04-13T12:49:00Z",
+              "last_updated": "2026-04-13T13:20:00Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "Low relevance answers",
+              "sub_issue_type": "Poor retrieval quality",
+              "product_area": "Search & Retrieval",
+              "issue_summary": "Why am I not getting relevant answers from Cortexa?",
+              "tags": ["rag", "search"],
+              "message_count": 2,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_bp_001",
+                  "timestamp": "2026-04-13T12:49:10Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why am I not getting relevant answers from Cortexa?",
+                  "bot_response": "Diagnosis: Low retrieval relevance. Root Cause: Improper embeddings or chunking. Suggested Fixes: Improve chunking strategy and embedding quality."
+                },
+                {
+                  "event_id": "EVT_bp_003",
+                  "timestamp": "2026-04-13T13:15:00Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why is document indexing delayed?",
+                  "bot_response": "Diagnosis: Indexing delay. Root Cause: Large file size or processing backlog. Suggested Fixes: Optimize chunk size and check indexing pipeline performance."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "client_name": "SparkNest Systems",
+      "users": [
+        {
+          "user_id": "default_user",
+          "issues": [
+            {
+              "issue_id": "ISSUE_sn_001",
+              "user_id": "default_user",
+              "client_name": "SparkNest Systems",
+              "created_at": "2026-04-13T12:21:00Z",
+              "last_updated": "2026-04-13T12:35:00Z",
+              "resolved_at": null,
+              "status": "FAILED",
+              "ticket_raised": true,
+              "ticket_status": "OPEN",
+              "ticket_id": "TICKET_sn_001",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "Database connection failure",
+              "sub_issue_type": "Invalid credentials or network issue",
+              "product_area": "API",
+              "issue_summary": "Why is my database connection failing?",
+              "tags": ["database", "connection"],
+              "message_count": 2,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_sn_001",
+                  "timestamp": "2026-04-13T12:21:00Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why is my database connection failing?",
+                  "bot_response": "Diagnosis: Connection failure. Root Cause: Invalid credentials or network issue. Suggested Fixes: Verify DB credentials and firewall rules."
+                },
+                {
+                  "event_id": "EVT_sn_002",
+                  "timestamp": "2026-04-13T12:35:00Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "How does Cortexa connect to external databases?",
+                  "bot_response": "Cortexa connects using configured connectors with credentials and connection strings."
+                }
+              ]
+            },
+            {
+              "issue_id": "ISSUE_3ecf2030",
+              "user_id": "default_user",
+              "client_name": "SparkNest Systems",
+              "created_at": "2026-04-14T05:37:43Z",
+              "last_updated": "2026-04-14T05:37:43Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "Low confidence responses",
+              "sub_issue_type": "Model lacks sufficient context or relevant data",
+              "product_area": "API",
+              "issue_summary": "Why is the system returning low-confidence answers?",
+              "tags": ["confidence", "retrieval"],
+              "message_count": 1,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_286ad93c",
+                  "timestamp": "2026-04-14T05:37:43Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why is the system returning low-confidence answers?",
+                  "bot_response": "Verify knowledge sources are uploaded and indexed. Complete initial bootstrap and environment configuration. Ensure queries are answered against approved sources. Improve query specificity to reduce ambiguity."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "client_name": "Annex Analytics",
+      "users": [
+        {
+          "user_id": "default_user",
+          "issues": [
+            {
+              "issue_id": "ISSUE_f6353779",
+              "user_id": "default_user",
+              "client_name": "Annex Analytics",
+              "created_at": "2026-04-13T17:20:51Z",
+              "last_updated": "2026-04-27T08:26:20Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "JWT authentication failure",
+              "sub_issue_type": "Token invalid, expired, or claim mismatch",
+              "product_area": "API",
+              "issue_summary": "Why is my JWT token not working?",
+              "tags": ["auth", "jwt"],
+              "message_count": 6,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_68c0b496",
+                  "timestamp": "2026-04-13T17:20:51Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why is my JWT token not working?",
+                  "bot_response": "Diagnosis: JWT authentication failure. Root Cause: Token expired or invalid. Suggested Fixes: Re-authenticate and generate a valid token."
+                },
+                {
+                  "event_id": "EVT_9d6f792c",
+                  "timestamp": "2026-04-21T06:09:45Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Error: jwt expired at 2026-04-21T10:30:00Z",
+                  "bot_response": "Diagnosis: Token expired. Root Cause: Token expiration time exceeded. Suggested Fixes: Implement refresh token flow and regenerate access token."
+                },
+                {
+                  "event_id": "EVT_82516e34",
+                  "timestamp": "2026-04-21T10:35:07Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "my JWT token not working?",
+                  "bot_response": "Diagnosis: JWT validation failure. Root Cause: Incorrect header format or invalid token. Suggested Fixes: Ensure Authorization header format is Bearer token."
+                },
+                {
+                  "event_id": "EVT_9599f454",
+                  "timestamp": "2026-04-22T12:58:10Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "User authenticated but access denied. Role: Viewer. 403 Forbidden ACCESS_DENIED on /api/v1/documents/upload",
+                  "bot_response": "Root Cause: Viewer role does not allow document upload. Steps: Review role permissions, update role to Developer or Admin, re-test access."
+                },
+                {
+                  "event_id": "EVT_a679fbfb",
+                  "timestamp": "2026-04-22T13:18:28Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "My API calls keep failing with 401 Unauthorized even though I'm passing the token.",
+                  "bot_response": "Root Cause: Token expired or not included correctly in Authorization header. Steps: Validate login flow, check token storage, implement token refresh logic."
+                },
+                {
+                  "event_id": "EVT_027065d5",
+                  "timestamp": "2026-04-27T08:26:20Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "My API call is failing with a 403 error. SSL handshake failed: certificate verify failed.",
+                  "bot_response": "Root Cause: mTLS handshake failing due to missing intermediate CA. Steps: verify cert/key pairing, build fullchain.crt with all intermediates, test with curl, regenerate CSR if cert is expired or malformed."
+                }
+              ]
+            },
+            {
+              "issue_id": "ISSUE_ann_001",
+              "user_id": "default_user",
+              "client_name": "Annex Analytics",
+              "created_at": "2026-04-15T11:12:32Z",
+              "last_updated": "2026-04-20T07:13:37Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "Incorrect document retrieval",
+              "sub_issue_type": "Indexing or chunking misconfiguration",
+              "product_area": "Search & Retrieval",
+              "issue_summary": "Why is Cortexa not retrieving correct document chunks?",
+              "tags": ["retrieval", "chunking", "indexing"],
+              "message_count": 3,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_ann_001",
+                  "timestamp": "2026-04-15T11:12:32Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "Why is Cortexa not retrieving the correct document chunks?",
+                  "bot_response": "Diagnosis: Retrieval mismatch. Root Cause: Stale index or improper chunking. Suggested Fixes: Re-index documents and validate chunk size."
+                },
+                {
+                  "event_id": "EVT_ann_002",
+                  "timestamp": "2026-04-20T07:08:16Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "This API call is failing",
+                  "bot_response": "Diagnosis: Retrieval configuration issue. Root Cause: Incorrect filters or namespace. Suggested Fixes: Validate query filters and collection mapping."
+                },
+                {
+                  "event_id": "EVT_ann_003",
+                  "timestamp": "2026-04-20T07:15:04Z",
+                  "event_type": "UPDATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "what is the error showing",
+                  "bot_response": "Diagnosis: Insufficient error context. Root Cause: Missing error details. Suggested Fixes: Provide exact error logs or status codes for deeper diagnosis."
+                }
+              ]
+            },
+            {
+              "issue_id": "ISSUE_ann_002",
+              "user_id": "default_user",
+              "client_name": "Annex Analytics",
+              "created_at": "2026-04-22T12:58:00Z",
+              "last_updated": "2026-04-22T12:58:10Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "Authorization / Access Mismatch",
+              "sub_issue_type": "Viewer role does not have upload privileges",
+              "product_area": "API",
+              "issue_summary": "User authenticated but 403 ACCESS_DENIED on document upload",
+              "tags": ["rbac", "403", "permissions"],
+              "message_count": 1,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_ann_004",
+                  "timestamp": "2026-04-22T12:58:10Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "User authenticated but access denied. Role: Viewer. 403 Forbidden ACCESS_DENIED on /api/v1/documents/upload",
+                  "bot_response": "Root Cause: Viewer role does not allow document upload. Steps: Review role permissions, update role to Developer or Admin, re-test access."
+                }
+              ]
+            },
+            {
+              "issue_id": "ISSUE_ann_003",
+              "user_id": "default_user",
+              "client_name": "Annex Analytics",
+              "created_at": "2026-04-27T08:26:00Z",
+              "last_updated": "2026-04-27T08:26:20Z",
+              "resolved_at": null,
+              "status": "OPEN",
+              "ticket_raised": false,
+              "ticket_status": "null",
+              "ticket_id": "null",
+              "resolved": false,
+              "category": "ISSUE",
+              "issue_type": "SSL Certificate Verification Failure",
+              "sub_issue_type": "Missing intermediate CA in certificate chain",
+              "product_area": "API",
+              "issue_summary": "403 error - SSL handshake failed, client certificate not trusted",
+              "tags": ["ssl", "mtls", "certificate", "403"],
+              "message_count": 1,
+              "rag_metrics": { "rag_used": true },
+              "resolution": {
+                "resolution_summary": null,
+                "resolution_type": null,
+                "resolved_by": null
+              },
+              "history": [
+                {
+                  "event_id": "EVT_ann_005",
+                  "timestamp": "2026-04-27T08:26:20Z",
+                  "event_type": "CREATED",
+                  "input_type": "text",
+                  "query_category": "ISSUE",
+                  "user_input": "My API call is failing with a 403 error. SSL handshake failed: certificate verify failed.",
+                  "bot_response": "Root Cause: mTLS handshake failing due to missing intermediate CA. Steps: verify cert/key pairing, build fullchain.crt with all intermediates, test with curl, regenerate CSR if cert is expired or malformed."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

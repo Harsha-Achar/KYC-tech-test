@@ -1,0 +1,38 @@
+.venv/
+venv/
+env/
+
+# Secrets / local env
+Backend/keys.env
+*.env
+*.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+dist/
+build/
+*.egg-info/
+
+# Node / Frontend
+Frontend/node_modules/
+Frontend/dist/
+node_modules/
+dist/
+
+# Vite / caches
+Frontend/.vite/
+.cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

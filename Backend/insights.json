@@ -1,0 +1,156 @@
+{
+  "clients": [
+    {
+      "client_name": "Annex Analytics",
+      "start_date": "2026-04-13T17:20:51.052401Z",
+      "last_updated": "2026-04-21T10:35:57.421753Z",
+      "overall_status": "IN_PROGRESS",
+      "total_issues": 2,
+      "status_breakdown": {
+        "open": 2,
+        "closed": 0,
+        "failed": 0
+      },
+      "issue_ids": [
+        "ISSUE_f6353779",
+        "ISSUE_ann_001"
+      ],
+      "report_sections": {
+        "issue_overview": "Annex Analytics has two open issues currently in progress: a JWT authentication failure where the client reports their JWT token is not working and has encountered a \"jwt expired\" error, and an incorrect document retrieval issue where Unified is not returning the expected document chunks and an associated API call is failing. Both issues remain unresolved and require configuration and validation steps based on the reported symptoms and prior diagnostic guidance.",
+        "root_cause_analysis": "The JWT issue is attributed to token invalidity, expiration, or claim mismatch, with the history explicitly indicating token expiration and potential validation problems such as incorrect Authorization header formatting. The retrieval issue is attributed to indexing or chunking misconfiguration, including possibilities noted in the history such as a stale index, improper chunk sizing, and retrieval configuration problems like incorrect filters or namespace; progress is limited by insufficient error context because specific logs or status codes were not provided.",
+        "business_impact": "JWT authentication failures can prevent successful API authentication and block access to protected functionality when tokens are expired or improperly presented. Incorrect document chunk retrieval and failing API calls can degrade search or retrieval accuracy and disrupt workflows that depend on Unified returning the correct content, with troubleshooting slowed by missing error details.",
+        "suggested_resolution": "For the JWT issue, re-authenticate to generate a valid token, regenerate the access token when it has expired, implement a refresh token flow, and ensure the Authorization header format is exactly \"Bearer <token>\". For the retrieval issue, re-index documents, validate chunk size settings, validate query filters and collection mapping including namespace usage, and provide exact error logs or status codes to enable deeper diagnosis."
+      },
+      "report_text": "1. Issue Overview\nAnnex Analytics has two open issues currently in progress: a JWT authentication failure where the client reports their JWT token is not working and has encountered a \"jwt expired\" error, and an incorrect document retrieval issue where Unified is not returning the expected document chunks and an associated API call is failing. Both issues remain unresolved and require configuration and validation steps based on the reported symptoms and prior diagnostic guidance.\n\n2. Root Cause Analysis\nThe JWT issue is attributed to token invalidity, expiration, or claim mismatch, with the history explicitly indicating token expiration and potential validation problems such as incorrect Authorization header formatting. The retrieval issue is attributed to indexing or chunking misconfiguration, including possibilities noted in the history such as a stale index, improper chunk sizing, and retrieval configuration problems like incorrect filters or namespace; progress is limited by insufficient error context because specific logs or status codes were not provided.\n\n3. Business Impact\nJWT authentication failures can prevent successful API authentication and block access to protected functionality when tokens are expired or improperly presented. Incorrect document chunk retrieval and failing API calls can degrade search or retrieval accuracy and disrupt workflows that depend on Unified returning the correct content, with troubleshooting slowed by missing error details.\n\n4. Suggested Resolution\nFor the JWT issue, re-authenticate to generate a valid token, regenerate the access token when it has expired, implement a refresh token flow, and ensure the Authorization header format is exactly \"Bearer <token>\". For the retrieval issue, re-index documents, validate chunk size settings, validate query filters and collection mapping including namespace usage, and provide exact error logs or status codes to enable deeper diagnosis.",
+      "source_hash": "18eddba2d49d258c7e0ef66bca36f511d81b8f13336a05f25b1c05fada8d169c",
+      "last_generated_at": "2026-04-22T12:07:37.218604Z",
+      "generation_error": null
+    },
+    {
+      "client_name": "Atlas FinServ Holdings",
+      "start_date": "2026-04-13T12:21:00Z",
+      "last_updated": "2026-04-13T12:25:00Z",
+      "overall_status": "IN_PROGRESS",
+      "total_issues": 1,
+      "status_breakdown": {
+        "open": 1,
+        "closed": 0,
+        "failed": 0
+      },
+      "issue_ids": [
+        "ISSUE_at_001"
+      ],
+      "report_sections": {
+        "issue_overview": "Atlas FinServ Holdings has one open data mapping issue summarized as an ISO format mismatch. The available history indicates the user also reported not getting relevant answers from Unified, with the bot attributing this to a poor embedding match.",
+        "root_cause_analysis": "No explicit root cause is recorded for the ISO format mismatch in the issue fields. In the conversation history, the bot diagnosed the relevance problem as a poor embedding match and cited improper document chunking or missing metadata as the root cause for that relevance issue.",
+        "business_impact": "The open ISO format mismatch suggests ongoing data mapping friction, and the reported poor relevance in Unified implies users may not be able to retrieve accurate or relevant answers from their documents, reducing the effectiveness of search and question answering workflows.",
+        "suggested_resolution": "Apply the fixes already suggested in the issue history for the relevance problem by improving document chunking and indexing, and ensure metadata is present to support better embedding matches. No specific resolution steps are provided in the dataset for the ISO format mismatch beyond its identification as a data mapping issue."
+      },
+      "report_text": "1. Issue Overview\nAtlas FinServ Holdings has one open data mapping issue summarized as an ISO format mismatch. The available history indicates the user also reported not getting relevant answers from Unified, with the bot attributing this to a poor embedding match.\n\n2. Root Cause Analysis\nNo explicit root cause is recorded for the ISO format mismatch in the issue fields. In the conversation history, the bot diagnosed the relevance problem as a poor embedding match and cited improper document chunking or missing metadata as the root cause for that relevance issue.\n\n3. Business Impact\nThe open ISO format mismatch suggests ongoing data mapping friction, and the reported poor relevance in Unified implies users may not be able to retrieve accurate or relevant answers from their documents, reducing the effectiveness of search and question answering workflows.\n\n4. Suggested Resolution\nApply the fixes already suggested in the issue history for the relevance problem by improving document chunking and indexing, and ensure metadata is present to support better embedding matches. No specific resolution steps are provided in the dataset for the ISO format mismatch beyond its identification as a data mapping issue.",
+      "source_hash": "f0ae51f6395cb5831e797e6f452a6a20293aec77a21606b208edc2943f93084f",
+      "last_generated_at": "2026-04-17T10:32:25.494040Z",
+      "generation_error": null
+    },
+    {
+      "client_name": "BluePeak Payments Inc.",
+      "start_date": "2026-04-13T12:49:00Z",
+      "last_updated": "2026-04-13T13:20:00Z",
+      "overall_status": "IN_PROGRESS",
+      "total_issues": 1,
+      "status_breakdown": {
+        "open": 1,
+        "closed": 0,
+        "failed": 0
+      },
+      "issue_ids": [
+        "ISSUE_bp_001"
+      ],
+      "report_sections": {
+        "issue_overview": "BluePeak Payments Inc. has an open issue in Unified where users report receiving low-relevance answers. The interaction history indicates the system diagnosed low retrieval relevance and also surfaced a related concern about delayed document indexing during follow-up questions about the document processing flow.",
+        "root_cause_analysis": "The documented root cause for low-relevance answers is poor retrieval quality, with contributing factors described as improper embeddings or chunking. The history also notes that indexing delays may be driven by large file sizes or a processing backlog, which can further affect retrieval freshness and perceived answer relevance.",
+        "business_impact": "Low retrieval relevance reduces the usefulness of Unified for end users by returning answers that do not match their intent, increasing repeated questions and support burden. Indexing delays can compound this by preventing newly uploaded or updated content from being available for retrieval in a timely manner, further degrading user trust and productivity.",
+        "suggested_resolution": "Apply the fixes already identified in the issue history by improving the chunking strategy and embedding quality to address retrieval relevance, and optimizing chunk size while checking indexing pipeline performance to mitigate indexing delays potentially caused by large files or processing backlog."
+      },
+      "report_text": "1. Issue Overview\nBluePeak Payments Inc. has an open issue in Unified where users report receiving low-relevance answers. The interaction history indicates the system diagnosed low retrieval relevance and also surfaced a related concern about delayed document indexing during follow-up questions about the document processing flow.\n\n2. Root Cause Analysis\nThe documented root cause for low-relevance answers is poor retrieval quality, with contributing factors described as improper embeddings or chunking. The history also notes that indexing delays may be driven by large file sizes or a processing backlog, which can further affect retrieval freshness and perceived answer relevance.\n\n3. Business Impact\nLow retrieval relevance reduces the usefulness of Unified for end users by returning answers that do not match their intent, increasing repeated questions and support burden. Indexing delays can compound this by preventing newly uploaded or updated content from being available for retrieval in a timely manner, further degrading user trust and productivity.\n\n4. Suggested Resolution\nApply the fixes already identified in the issue history by improving the chunking strategy and embedding quality to address retrieval relevance, and optimizing chunk size while checking indexing pipeline performance to mitigate indexing delays potentially caused by large files or processing backlog.",
+      "source_hash": "18bdedec758c2eb6d39f8ce12940d67b726df1fcce1c0ced8a9900f3cf1941dd",
+      "last_generated_at": "2026-04-17T10:32:30.948274Z",
+      "generation_error": null
+    },
+    {
+      "client_name": "Bluestone Inc",
+      "start_date": "2026-04-13T12:18:00Z",
+      "last_updated": "2026-04-13T13:10:00Z",
+      "overall_status": "IN_PROGRESS",
+      "total_issues": 1,
+      "status_breakdown": {
+        "open": 1,
+        "closed": 0,
+        "failed": 0
+      },
+      "issue_ids": [
+        "ISSUE_bs_001"
+      ],
+      "report_sections": {
+        "issue_overview": "Bluestone Inc has an open authentication issue where the user reports their JWT token is not working and is receiving authentication failures in Unified. The issue is currently in progress and was last updated on 2026-04-13T13:10:00Z.",
+        "root_cause_analysis": "The documented root cause is an invalid or expired JWT token, with additional context indicating the token may be expired or signed with an incorrect key. The history also notes invalid credentials scenarios, including an incorrect API key or expired token, and potential issues with how the token is passed in the Authorization header.",
+        "business_impact": "Authentication failures prevent successful access to Unified APIs, which can block the client from completing API requests and integrating or operating workflows that depend on authenticated calls.",
+        "suggested_resolution": "Re-authenticate by calling the auth endpoint and ensure the token is passed in the Authorization header using the proper header format. Verify the JWT signing key is correct, and if using API keys, regenerate the API key to address potential invalid credentials or expired token conditions."
+      },
+      "report_text": "1. Issue Overview\nBluestone Inc has an open authentication issue where the user reports their JWT token is not working and is receiving authentication failures in Unified. The issue is currently in progress and was last updated on 2026-04-13T13:10:00Z.\n\n2. Root Cause Analysis\nThe documented root cause is an invalid or expired JWT token, with additional context indicating the token may be expired or signed with an incorrect key. The history also notes invalid credentials scenarios, including an incorrect API key or expired token, and potential issues with how the token is passed in the Authorization header.\n\n3. Business Impact\nAuthentication failures prevent successful access to Unified APIs, which can block the client from completing API requests and integrating or operating workflows that depend on authenticated calls.\n\n4. Suggested Resolution\nRe-authenticate by calling the auth endpoint and ensure the token is passed in the Authorization header using the proper header format. Verify the JWT signing key is correct, and if using API keys, regenerate the API key to address potential invalid credentials or expired token conditions.",
+      "source_hash": "9d36f37630435c1b71cbcef335be523446f8923e4ffca3282f9de664b795c5e0",
+      "last_generated_at": "2026-04-17T10:32:15.593060Z",
+      "generation_error": null
+    },
+    {
+      "client_name": "Northwind Treasury Solutions",
+      "start_date": "2026-04-13T12:24:00Z",
+      "last_updated": "2026-04-13T12:50:00Z",
+      "overall_status": "CLOSED",
+      "total_issues": 1,
+      "status_breakdown": {
+        "open": 0,
+        "closed": 1,
+        "failed": 0
+      },
+      "issue_ids": [
+        "ISSUE_nw_001"
+      ],
+      "report_sections": {
+        "issue_overview": "Northwind Treasury Solutions reported a file upload failure in Unified, asking why their upload was failing. The issue was diagnosed and tracked as a closed incident, with the failure tied to the type of file being uploaded.",
+        "root_cause_analysis": "The identified root cause was an unsupported file format. The diagnosis and history indicate the uploaded file type was not among the supported formats for Unified document uploads.",
+        "business_impact": "The client was unable to successfully upload documents into Unified until the file format was corrected, preventing completion of the intended document upload via the UI or upload API.",
+        "suggested_resolution": "Correct the file to a supported format and re-upload using the Unified upload API or UI. Supported formats referenced in the issue history are PDF, DOCX, and TXT, and the recorded resolution confirms the file format was corrected to a supported type."
+      },
+      "report_text": "1. Issue Overview\nNorthwind Treasury Solutions reported a file upload failure in Unified, asking why their upload was failing. The issue was diagnosed and tracked as a closed incident, with the failure tied to the type of file being uploaded.\n\n2. Root Cause Analysis\nThe identified root cause was an unsupported file format. The diagnosis and history indicate the uploaded file type was not among the supported formats for Unified document uploads.\n\n3. Business Impact\nThe client was unable to successfully upload documents into Unified until the file format was corrected, preventing completion of the intended document upload via the UI or upload API.\n\n4. Suggested Resolution\nCorrect the file to a supported format and re-upload using the Unified upload API or UI. Supported formats referenced in the issue history are PDF, DOCX, and TXT, and the recorded resolution confirms the file format was corrected to a supported type.",
+      "source_hash": "49ff756085fc082396b74aa39ce288aca2080356c45d5bd606325d1b44f5bf2b",
+      "last_generated_at": "2026-04-17T10:32:20.133895Z",
+      "generation_error": null
+    },
+    {
+      "client_name": "SparkNest Systems",
+      "start_date": "2026-04-13T12:21:00Z",
+      "last_updated": "2026-04-14T05:37:43.770896Z",
+      "overall_status": "FAILED",
+      "total_issues": 2,
+      "status_breakdown": {
+        "open": 1,
+        "closed": 0,
+        "failed": 1
+      },
+      "issue_ids": [
+        "ISSUE_sn_001",
+        "ISSUE_3ecf2030"
+      ],
+      "report_sections": {
+        "issue_overview": "SparkNest Systems currently has two tracked issues with an overall status of FAILED: a failed database connection failure inquiry and an open issue regarding low-confidence responses. The database issue centers on connection failures when attempting to access an external database via configured connectors, while the low-confidence issue concerns the system downgrading confidence when responding to user queries.",
+        "root_cause_analysis": "For the database connection failure, the only stated potential causes in the history are invalid credentials or a network issue, with emphasis on verifying database credentials and firewall rules. For low-confidence responses, the documented root cause is insufficient context or relevant data for queries, such as ambiguous prompts, missing inputs, or limited retrieval/knowledge coverage, which leads the model to reduce confidence.",
+        "business_impact": "Database connection failures can prevent successful connectivity to external databases through configured connectors, blocking data access needed for operations. Low-confidence responses reduce answer reliability and usefulness for users, particularly when required knowledge sources are not available or indexed, or when queries are too ambiguous to retrieve relevant content.",
+        "suggested_resolution": "For the database connection failure, verify the database credentials and review firewall rules or other network controls affecting connectivity, and confirm the connector configuration uses the correct credentials and connection strings. For low-confidence responses, verify relevant knowledge sources are uploaded and indexed, confirm the initial bootstrap and environment configuration were completed to initialize required containers and indexes, ensure question-answering is using approved and available sources that contain the needed content, and refine user queries to be more specific to reduce ambiguity."
+      },
+      "report_text": "1. Issue Overview\nSparkNest Systems currently has two tracked issues with an overall status of FAILED: a failed database connection failure inquiry and an open issue regarding low-confidence responses. The database issue centers on connection failures when attempting to access an external database via configured connectors, while the low-confidence issue concerns the system downgrading confidence when responding to user queries.\n\n2. Root Cause Analysis\nFor the database connection failure, the only stated potential causes in the history are invalid credentials or a network issue, with emphasis on verifying database credentials and firewall rules. For low-confidence responses, the documented root cause is insufficient context or relevant data for queries, such as ambiguous prompts, missing inputs, or limited retrieval/knowledge coverage, which leads the model to reduce confidence.\n\n3. Business Impact\nDatabase connection failures can prevent successful connectivity to external databases through configured connectors, blocking data access needed for operations. Low-confidence responses reduce answer reliability and usefulness for users, particularly when required knowledge sources are not available or indexed, or when queries are too ambiguous to retrieve relevant content.\n\n4. Suggested Resolution\nFor the database connection failure, verify the database credentials and review firewall rules or other network controls affecting connectivity, and confirm the connector configuration uses the correct credentials and connection strings. For low-confidence responses, verify relevant knowledge sources are uploaded and indexed, confirm the initial bootstrap and environment configuration were completed to initialize required containers and indexes, ensure question-answering is using approved and available sources that contain the needed content, and refine user queries to be more specific to reduce ambiguity.",
+      "source_hash": "1ed08082a8342afbcc5a162d74aef79968d4a55b6811427dca154ca8a5e970ee",
+      "last_generated_at": "2026-04-17T10:32:37.805118Z",
+      "generation_error": null
+    }
+  ]
+}
