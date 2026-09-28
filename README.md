@@ -1,214 +1,219 @@
 # KYC-TechSpec (Affine TechSpec)
 
-FinTech integration support workspace for API clients. Combines a React dashboard with a FastAPI backend that provides AI troubleshooting, document ingestion, compatibility analysis, and issue tracking.
+FinTech integration support workspace for API client onboarding. Combines a React dashboard with a FastAPI backend providing AI troubleshooting, document ingestion, compatibility analysis, and issue tracking.
 
-**Service category for evaluation:** Service (LLM) — multi-agent orchestration with RAG retrieval.
+This repository supports **three Expedia High Level Evaluation paths**. Choose the type that matches your onboarding configuration.
 
----
+| Expedia Type | Best For | Primary Artifact | Target Endpoint |
+|--------------|----------|------------------|-----------------|
+| **Service (LLM)** | Multi-agent RAG chat | [`docs/expedia/README-SERVICE-LLM.md`](docs/expedia/README-SERVICE-LLM.md) | `POST /chatbot/chat` |
+| **Service (Non-LLM)** | Deterministic CRUD/config | [`docs/expedia/README-SERVICE-NO-LLM.md`](docs/expedia/README-SERVICE-NO-LLM.md) | `POST /client-config/create` |
+| **Skill** | Claude workflow for KYC analysis | [`.claude/skills/kyc-techspec/SKILL.md`](.claude/skills/kyc-techspec/SKILL.md) | N/A (workflow) |
 
-## What this service does
-
-KYC-TechSpec helps integration engineers troubleshoot API onboarding issues. Users ask natural-language questions; the backend classifies the query, retrieves relevant documentation from a vector index, and returns a formatted answer grounded in indexed sources when available.
-
-Primary evaluation endpoint: **`POST /chatbot/chat`**
-
----
-
-## Architecture
-
-**Service type:** `multi_agent` + `rag_pipeline`
-
-**Framework:** FastAPI (Python), Microsoft AutoGen, Azure OpenAI, Azure Cognitive Search, Azure Blob Storage
-
-**Frontend:** React 19 + TypeScript + Vite (port 5174, proxies `/api` → backend port 8000)
-
-### Multi-agent workflow (`POST /chatbot/chat`)
-
-| Agent | Role |
-|-------|------|
-| `classification_agent` | Classifies query as `GENERAL`, `INTEGRATION`, or `ISSUE` |
-| `retriever` | Runs vector search against Azure Cognitive Search |
-| `fallback_checker_agent` | Decides whether retrieved docs are sufficient |
-| `fallback_answer_agent` | Safe generic answer when RAG context is empty |
-| `formatting_agent` | Produces final user-facing response (business or technical persona) |
-
-**Execution order:** Input → Classification → Vector retrieval → Fallback check → (Fallback answer OR format from RAG) → JSON response
-
-### RAG pipeline
-
-1. Documents uploaded via `POST /upload/` (PDF, DOCX, TXT)
-2. Text extracted, chunked (~1000 chars), embedded with Azure OpenAI
-3. Chunks stored in Azure Search index (`tech-spec`)
-4. Chat queries embed the question and retrieve top-K neighbors (default K=5)
+Full onboarding metadata: [`docs/expedia/ONBOARDING.md`](docs/expedia/ONBOARDING.md)
 
 ---
 
-## Target endpoint: POST /chatbot/chat
+## Overview
 
-**Purpose:** AI troubleshooting chat with optional screenshot analysis for error diagnosis.
+KYC-TechSpec helps integration engineers troubleshoot Cortexa API onboarding issues. Users ask natural-language questions; the backend classifies the query, retrieves relevant documentation from a vector index, orchestrates AutoGen agents, and returns a formatted answer grounded in indexed sources when available.
 
-**Method:** `POST`
+**Recommended evaluation type:** Service (LLM) — the core product is the multi-agent RAG chat pipeline.
 
-**URL (local):** `http://127.0.0.1:8000/chatbot/chat`
+---
+
+## Base URL
+
+```
+http://127.0.0.1:8000
+```
+
+Frontend dev server: `http://localhost:5174` (proxies to backend)
+
+## Authentication
+
+**Type:** none (local development)
+
+**Header/format:** No authentication headers required.
+
+---
+
+## Primary Endpoint — Service (LLM)
+
+### POST /chatbot/chat
+
+**Purpose:** AI troubleshooting chat with optional screenshot analysis. **Target endpoint for service_llm evaluation.**
 
 **Content-Type:** `multipart/form-data`
 
-**Authentication:** None (local development)
-
-### Request fields
+#### Request
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `query` | string | Yes* | User question. Alternatives accepted: `text`, `message`, `prompt` |
-| `user_id` | string | No | Caller identifier. Default: `default_user` |
-| `client_name` | string | No | Client name for issue tracking. Default: `Unknown Client` |
-| `persona` | string | No | `business` or `technical`. Default: `technical` |
-| `image` | file | No | Screenshot of error/logs; text extracted via vision model and appended to query |
+| `query` | string | Yes* | User question. Alternatives: `text`, `message`, `prompt` |
+| `user_id` | string | no | Caller identifier. Default: `default_user` |
+| `client_name` | string | no | Client name for issue tracking. Default: `Unknown Client` |
+| `persona` | string | no | `business` or `technical`. Default: `technical` |
+| `image` | file | no | Error screenshot for vision-based text extraction |
 
-### Response fields
+#### Response
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `answer` | string | Final formatted assistant response |
-| `type` | string | Query classification: `GENERAL`, `INTEGRATION`, or `ISSUE` |
-| `diagnosis` | string | Issue type label when applicable |
-| `rootCause` | string | Root cause summary when applicable |
+| `type` | string | `GENERAL`, `INTEGRATION`, or `ISSUE` |
+| `diagnosis` | string | Issue type label (may be empty) |
+| `rootCause` | string | Root cause summary (may be empty) |
 | `confidence` | string | `HIGH` or `LOW` |
-| `persona_used` | string | Persona applied to the response |
-| `rag_used` | boolean | Whether vector retrieval returned usable context |
-| `fallback_used` | boolean | Whether the fallback agent was invoked |
+| `persona_used` | string | Persona applied |
+| `rag_used` | boolean | Vector retrieval returned context |
+| `fallback_used` | boolean | Fallback agent was invoked |
 
-### Example request (curl)
+#### Error Response
 
-```bash
-curl -X POST "http://127.0.0.1:8000/chatbot/chat" \
-  -F "query=How do I authenticate to the Cortexa API?" \
-  -F "client_name=Meridian Global Payments" \
-  -F "persona=technical"
-```
+| Status | Key | Example |
+|--------|-----|---------|
+| 400 | `detail` | `"Missing query"` |
 
-### Example response
-
-```json
-{
-  "answer": "Based on the available documentation...",
-  "type": "INTEGRATION",
-  "diagnosis": "",
-  "rootCause": "",
-  "confidence": "HIGH",
-  "persona_used": "technical",
-  "rag_used": true,
-  "fallback_used": false
-}
-```
-
-### Error responses
-
-| Status | Condition |
-|--------|-----------|
-| 400 | Missing `query` (and no usable alternate field or image text) |
+See [`docs/expedia/README-SERVICE-LLM.md`](docs/expedia/README-SERVICE-LLM.md) for full service_llm documentation including agents, models, and latency.
 
 ---
 
-## Additional HTTP endpoints
+## Primary Endpoint — Service (Non-LLM)
 
-| Method | Path | Encoding | Purpose |
-|--------|------|----------|---------|
-| GET | `/` | — | Health check: `{"message": "Backend running"}` |
-| POST | `/upload/` | multipart | Upload integration guide (PDF/DOCX); triggers background indexing |
-| POST | `/chatbot/index` | multipart | Direct document indexing (`file` field: PDF/DOCX/TXT) |
-| POST | `/compatibility/analyze` | JSON | Compare client stack text against Cortexa baseline |
-| GET | `/compatibility/jpmc-config` | — | Returns JPMC/Cortexa reference configuration |
-| GET | `/issues/list` | — | List tracked integration issues |
-| GET | `/dashboard/` | — | Overview dashboard metrics |
-| POST | `/client-config/create` | JSON | Create client configuration record |
+### POST /client-config/create
 
-### POST /upload/
+**Purpose:** Create client onboarding configuration with validation. **Target endpoint for service_no_llm evaluation.**
+
+**Content-Type:** `application/json`
+
+#### Request
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `file` | file | Yes | PDF or DOCX integration guide |
-| `tag` | string | No | e.g. `Integration Guide`, `Resolution Guide`, `FAQ` |
-| `uploadedBy` | string | No | Uploader email |
+| `client_name` | string | yes | Client display name |
+| `assigned_to` | string | no | Owner email |
+| `services` | array | no | Service list |
+| `environment` | string | no | Sandbox, Production, etc. |
+| `system_type` | string | no | System classification |
+| `legacy_present` | boolean | no | Legacy system flag |
+| `llm_fallback` | boolean | no | LLM fallback enabled |
+| `industry` | string | no | Industry vertical |
+| `priority` | string | no | Priority level |
 
-**Response:** `{ "message", "filename", "indexingStarted" }`
+#### Response (all fields required)
 
-### POST /compatibility/analyze
+`client_id`, `client_name`, `assigned_to`, `product`, `services`, `environment`, `system_type`, `legacy_present`, `llm_fallback`, `industry`, `priority`, `created_at`, `updated_at`
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `client_text` | string | Yes | Client architecture, stack, security, and integration requirements |
+#### Error Response
 
-**Response:** `compatibility_score`, `status`, `key_matches`, `key_gaps`, `risks`, `recommended_next_steps`, `technical_recommendations`
+| Status | Key | Example |
+|--------|-----|---------|
+| 400 | `detail` | `"client_name is required"` |
+| 500 | `detail` | Azure Blob configuration missing |
+
+**Alternate non-LLM endpoint:** `GET /compatibility/jpmc-config` — returns static Cortexa baseline config (<50ms, no LLM).
+
+See [`docs/expedia/README-SERVICE-NO-LLM.md`](docs/expedia/README-SERVICE-NO-LLM.md) for full service_no_llm documentation.
 
 ---
 
-## API contract summary (for evaluation harness)
+## Skill Evaluation
 
-```json
-{
-  "input_fields": ["query", "user_id", "client_name", "persona", "image"],
-  "output_fields": ["answer", "type", "diagnosis", "rootCause", "confidence", "persona_used", "rag_used", "fallback_used"],
-  "input_field_types": {
-    "query": "string",
-    "user_id": "string",
-    "client_name": "string",
-    "persona": "string",
-    "image": "file"
-  },
-  "output_field_types": {
-    "answer": "string",
-    "type": "string",
-    "diagnosis": "string",
-    "rootCause": "string",
-    "confidence": "string",
-    "persona_used": "string",
-    "rag_used": "boolean",
-    "fallback_used": "boolean"
-  },
-  "input_encoding": "multipart",
-  "auth_type": "none"
-}
+For skill-based evaluation, use local path:
+
+```
+.claude/skills/kyc-techspec/
+├── SKILL.md
+└── references/
+    ├── architecture.md
+    ├── api-overview.md
+    └── domain-rules.md
 ```
 
-**Test harness hints:**
-
-- **Endpoint:** `http://127.0.0.1:8000/chatbot/chat`
-- **Content type:** `multipart`
-- **File fields:** `image` (optional)
-- **Response path:** `answer`
+Skill trigger phrases: "troubleshoot Cortexa API integration issues", "analyze KYC onboarding documentation", "diagnose FinTech client integration failures".
 
 ---
 
-## Quality guarantees (kb_content)
+## Quality Guarantees
 
-**Relevancy:** Responses address the user's integration, product, or troubleshooting question. Classification routes GENERAL (product info), INTEGRATION (setup steps), and ISSUE (errors/failures) queries to appropriate formatting.
+- **Relevancy:** Responses address integration, product, or troubleshooting questions per classification type (GENERAL, INTEGRATION, ISSUE).
 
-**Groundedness:** When RAG retrieval succeeds, answers use only content from indexed documentation chunks. The system does not invent product-specific endpoints, credentials, pricing, or policies beyond retrieved context.
+- **Groundedness:** When RAG retrieval succeeds, answers use only indexed documentation. No fabricated endpoints, credentials, or policies.
 
-**Completeness:** A complete response includes `answer`, classification `type`, confidence indicator, and flags for `rag_used` and `fallback_used`. ISSUE-type queries may also include `diagnosis` and `rootCause`.
+- **Completeness:** Chat responses include `answer`, `type`, `confidence`, `rag_used`, `fallback_used`. Client config responses include all 13 schema fields.
 
-**Faithfulness:** Retrieved source text is preserved through formatting; the formatter must not add facts not present in context. When context is insufficient, the service states that information was not found rather than guessing.
-
----
-
-## Tech stack
-
-**Backend:** FastAPI, Python, OpenAI SDK (Azure OpenAI), pyautogen, azure-search-documents, azure-storage-blob, PyPDF2, python-docx
-
-**Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4, Recharts, React Router 7
-
-**Infrastructure:** Azure OpenAI (chat + embeddings), Azure Cognitive Search, Azure Blob Storage
+- **Faithfulness:** Retrieved source text preserved through formatting. Insufficient context triggers explicit "not found" messaging rather than guessing.
 
 ---
 
-## Local development
+## Workflow / Architecture
+
+**Service type (LLM path):** Multi-agent + RAG pipeline
+
+| Agent | Role |
+|-------|------|
+| `classification_agent` | Classifies query as GENERAL, INTEGRATION, or ISSUE |
+| `retriever` | Vector search against Azure Cognitive Search |
+| `fallback_checker_agent` | Decides if retrieved docs are sufficient |
+| `fallback_answer_agent` | Safe generic answer when RAG context is empty |
+| `formatting_agent` | Final user-facing response (business or technical persona) |
+
+**Execution order:** Input → Classification → Vector retrieval → Fallback check → (Fallback answer OR format from RAG) → JSON response
+
+**RAG pipeline:** Upload (PDF/DOCX/TXT) → chunk (~1000 chars) → embed (Azure OpenAI) → index (Azure Search `tech-spec`) → retrieve top-K (default 5) on query
+
+**Framework:** FastAPI, Microsoft AutoGen, Azure OpenAI, Azure Cognitive Search, Azure Blob Storage
+
+**Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4
+
+---
+
+## Models Used
+
+| Usage | Model |
+|-------|-------|
+| Agent chat | `gpt-4o-08-06` (Azure deployment) |
+| Embeddings | Azure OpenAI `embedding_deployment` |
+| Vision (screenshots) | Azure OpenAI vision |
+| Compatibility analyze | Same Azure deployment (single LLM call) |
+
+Non-LLM endpoints (`/client-config/create`, `/compatibility/jpmc-config`, `/dashboard/`) use zero models.
+
+---
+
+## Latency Expectations
+
+| Path | Expected p95 |
+|------|-------------|
+| `POST /chatbot/chat` (full pipeline) | 8–15s |
+| `POST /client-config/create` | < 500ms |
+| `GET /compatibility/jpmc-config` | < 50ms |
+| `GET /dashboard/` | < 10ms |
+
+---
+
+## OpenAPI
+
+FastAPI auto-generates from the **running service** (not GitHub):
+
+| Resource | URL |
+|----------|-----|
+| OpenAPI JSON | `http://127.0.0.1:8000/openapi.json` |
+| Swagger UI | `http://127.0.0.1:8000/docs` |
+| ReDoc | `http://127.0.0.1:8000/redoc` |
+
+Expedia evaluation requires the backend to be running and `/openapi.json` reachable.
+
+---
+
+## Local Development
 
 ### Backend
 
 ```bash
 cd Backend
-# activate venv and configure keys.env
+# Configure Backend/keys.env
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -218,7 +223,6 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 cd Frontend
 npm install
 npm run dev
-# http://localhost:5174
 ```
 
 ### Environment variables (`Backend/keys.env`)
@@ -230,17 +234,14 @@ npm run dev
 
 ---
 
-## Expedia evaluation setup
+## Expedia Onboarding Quick Reference
 
-1. **Category:** Service (LLM)
-2. **Endpoint:** `http://127.0.0.1:8000/chatbot/chat`
-3. **Base URL:** `http://127.0.0.1:8000`
-4. **GitHub URL:** This repository (Expedia fetches this `README.md` for service analysis)
-5. **Auth:** None (local)
-6. **Content type (harness):** multipart
+| Field | Service LLM | Service Non-LLM | Skill |
+|-------|-------------|-----------------|-------|
+| Category | Service (LLM) | Service (Non-LLM) | Skill |
+| Endpoint | `POST /chatbot/chat` | `POST /client-config/create` | N/A |
+| Base URL | `http://127.0.0.1:8000` | `http://127.0.0.1:8000` | N/A |
+| Skill path | N/A | N/A | `.claude/skills/kyc-techspec/` |
+| GitHub sync file | This `README.md` | Copy `docs/expedia/README-SERVICE-NO-LLM.md` to root | Local path recommended |
 
-Suggested test prompts:
-
-- "What are the steps to onboard a new API client?"
-- "Why am I getting a 401 Unauthorized error during token exchange?"
-- "What file types are supported for document upload and indexing?"
+See [`docs/expedia/ONBOARDING.md`](docs/expedia/ONBOARDING.md) for complete MetadataStep values, validation checklist, and known gaps.
