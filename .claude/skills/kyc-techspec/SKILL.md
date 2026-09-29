@@ -24,19 +24,19 @@ Use **Glob** to map the repository layout. Confirm these directories exist:
 - `Backend/Input/` — Cortexa reference documents (DOCX)
 - `Backend/keys.env` — Azure OpenAI, Search, and Blob credentials
 
-Use **Read** on `Backend/main.py` to verify router registration and CORS origins (`localhost:5174`). Use **Read** on `Backend/requirements.txt` to confirm dependencies: `fastapi`, `openai`, `pyautogen`, `azure-search-documents`, `azure-storage-blob`, `PyPDF2`, `python-docx`.
+Use **Read** on `Backend/main.py` to verify router registration and CORS origins (`localhost:5174`). Use **Read** on `Backend/requirements.txt` to confirm dependencies: `fastapi`, `openai`, `azure-search-documents`, `azure-storage-blob`, `PyPDF2`, `python-docx`. Also install `pyautogen==0.9.0` separately — required by `chatbot.py` but not listed in `requirements.txt`.
 
 Use **Grep** across `Backend/Routers/` to locate all `@router.get`, `@router.post`, and `@router.put` decorators. Cross-reference findings with [api-overview.md](references/api-overview.md).
 
-Run the backend with **Bash**:
+Run the backend with **Bash** (use **8001** when Expedia eval occupies 8000):
 
 ```bash
-cd Backend && uvicorn main:app --reload --host 127.0.0.1 --port 8000
+cd Backend && source .venv/bin/activate && uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
 
 Verify health at `GET /` returning `{"message": "Backend running"}`. Confirm OpenAPI is served at `/openapi.json` and `/docs`.
 
-Inspect `Frontend/vite.config.ts` for the dev proxy target (port 8000). Run the frontend:
+Inspect `Frontend/vite.config.ts` for the dev proxy target (currently **8001** in side-by-side setup). Run the frontend:
 
 ```bash
 cd Frontend && npm install && npm run dev
@@ -56,9 +56,9 @@ Trace the agent execution sequence documented in [architecture.md](references/ar
 2. **retriever** — calls `extract_context()` for Azure Cognitive Search vector retrieval (TOP_K=5)
 3. **fallback_checker_agent** — decides if retrieved docs are sufficient
 4. **fallback_answer_agent** — safe generic answer when RAG context is empty
-5. **formatting_agent** — `_format_answer_direct()` produces final response for business or technical persona
+5. **`_format_answer_direct()`** — direct Azure OpenAI call (not an AutoGen agent) produces final response for business or technical persona
 
-Use **Grep** for `AssistantAgent` definitions to extract each agent's `system_message` and `llm_config`. Record the model deployment: `gpt-4o-08-06` via Azure OpenAI.
+Use **Grep** for `AssistantAgent` definitions to extract each agent's `system_message` and `llm_config`. Record the model deployment from `AZURE_OPENAI_DEPLOYMENT_NAME` in `keys.env`.
 
 Inspect multipart form handling:
 
@@ -77,12 +77,12 @@ Verify response schema matches [domain-rules.md](references/domain-rules.md):
 Use **Bash** to send a test chat request:
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/chatbot/chat" \
+curl -X POST "http://127.0.0.1:8001/chatbot/chat" \
   -F "query=What are the Cortexa onboarding phases?" \
   -F "persona=technical"
 ```
 
-Inspect whether `rag_used` is true (indexed docs available) or `fallback_used` is true (generic answer path). When `type` is `ISSUE` or `RESOLUTION`, verify issue persistence by **Read** on `Backend/issues.json`.
+Inspect whether `rag_used` is true (indexed docs available) or `fallback_used` is true (generic answer path). When `type` is `ISSUE` or `RESOLUTION`, chat persistence writes to Azure Blob `Chatbot/issues.json`; `GET /issues/list` reads local `Backend/issues.json` — these may differ until unified.
 
 ## Step 3: Validate Document Ingestion and RAG Indexing
 
@@ -103,12 +103,13 @@ Use **Read** on sample documents in `Backend/Input/` to understand domain conten
 - `Cortexa_General_Documentation.docx`
 - `Cortexa_Client_Integration_Guide.docx`
 - `Cortexa_Resolution_Guide.docx`
+- `Cortexa_Advance_Resolution.docx`
 - `Cortexa_Certificates.docx`
 
 Run **Bash** to test direct indexing:
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/chatbot/index" \
+curl -X POST "http://127.0.0.1:8001/chatbot/index" \
   -F "file=@Backend/Input/Cortexa_General_Documentation.docx"
 ```
 
@@ -139,7 +140,7 @@ Use **Read** on `Backend/Routers/client_config.py` for deterministic CRUD:
 Test client config creation with **Bash**:
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/client-config/create" \
+curl -X POST "http://127.0.0.1:8001/client-config/create" \
   -H "Content-Type: application/json" \
   -d '{"client_name": "Test FinTech Corp", "environment": "Sandbox", "industry": "Payments"}'
 ```
@@ -150,7 +151,8 @@ Use **Read** on `Backend/Routers/issue.py` for issue list, breakdown, and report
 
 Use **Grep** in `Frontend/src/pages/` to locate UI components that call backend APIs:
 
-- `AITroubleshooter.tsx` — chat interface
+- `ClientChatbotPage.tsx` — primary client chat interface (route `/`)
+- `AITroubleshooter.tsx` — admin chat interface (route `/ai`)
 - `CompatibilityPage.tsx` — compatibility analysis
 - `IssueMonitor.tsx` — issue dashboard
 - `UploadCenter.tsx` — document management
@@ -162,7 +164,8 @@ Verify error handling alignment: FastAPI returns `{"detail": "..."}` for 4xx/5xx
 
 Create or update documentation artifacts as needed:
 
-- `Backend/issues.json` — issue store structure
+- Azure Blob `Chatbot/issues.json` — issue store written by chat (ISSUE/RESOLUTION queries)
+- `Backend/issues.json` — local file read by `/issues/list` API
 - `Frontend/src/data/knowledgeBase.ts` — static KB entries for UI
 
 ## Step 6: Produce Evaluation-Ready Documentation
@@ -176,20 +179,23 @@ Synthesize findings into Expedia-compatible documentation. Use **Write** or **Ed
 For **service_llm** evaluation, designate target endpoint:
 
 ```
-POST http://127.0.0.1:8000/chatbot/chat
+POST http://127.0.0.1:8001/chatbot/chat
 Content-Type: multipart/form-data
 ```
 
-For **service_no_llm** evaluation, designate target endpoint:
+For **service_no_llm** evaluation, designate primary target endpoint:
 
 ```
-GET http://127.0.0.1:8000/compatibility/jpmc-config
+POST http://127.0.0.1:8001/client-config/create
+Content-Type: application/json
 ```
 
-Document OpenAPI location for live service fetch:
+Alternate non-LLM endpoint: `GET http://127.0.0.1:8001/compatibility/jpmc-config`
 
-- Spec: `http://127.0.0.1:8000/openapi.json`
-- UI: `http://127.0.0.1:8000/docs`
+Document OpenAPI location for live service fetch (use your backend port):
+
+- Spec: `http://127.0.0.1:8001/openapi.json`
+- UI: `http://127.0.0.1:8001/docs`
 
 Record quality guarantees from [domain-rules.md](references/domain-rules.md):
 
@@ -205,6 +211,7 @@ List expected output file paths in backticks when modifying the codebase:
 - `Backend/Routers/client_config.py`
 - `Backend/Routers/upload.py`
 - `Backend/Routers/issue.py`
+- `Frontend/src/pages/ClientChatbotPage.tsx`
 - `Frontend/src/pages/AITroubleshooter.tsx`
 - `Frontend/src/pages/CompatibilityPage.tsx`
 - `README.md`
@@ -219,11 +226,11 @@ List expected output file paths in backticks when modifying the codebase:
 5. Document auth as `none` for local development — do not assume bearer tokens unless production deployment adds middleware.
 - **Run command** health checks (`curl GET /`) before any POST test to confirm backend availability.
 - **Search** `Backend/Routers/` for `HTTPException` patterns to catalog all error `detail` strings.
-- Keep SKILL.md workflow aligned with actual agent names: `classification_agent`, `retriever`, `fallback_checker_agent`, `fallback_answer_agent`, `formatting_agent`.
+- Keep SKILL.md workflow aligned with actual agent names: `classification_agent`, `retriever`, `fallback_checker_agent`, `fallback_answer_agent`, plus `_format_answer_direct()` for final formatting.
 - When creating files, use existing project conventions: FastAPI routers in `Backend/Routers/`, React pages in `Frontend/src/pages/`, env in `Backend/keys.env`.
 - For compatibility scoring, apply deterministic status mapping from `_normalize_payload()` — do not rely on LLM-assigned status strings without post-processing validation.
-- Issue persistence occurs only for `ISSUE` and `RESOLUTION` query types — verify `Backend/issues.json` structure after chat tests.
-- Frontend dev server port is 5174, backend is 8000 — document both in run instructions.
+- Issue persistence occurs only for `ISSUE` and `RESOLUTION` query types — chat writes Azure Blob `Chatbot/issues.json`; `/issues/list` reads local `Backend/issues.json`.
+- Frontend dev server port is 5174; backend is **8001** when Expedia uses 8000 (or **8000** for KYC-only) — document both and match `vite.config.ts` proxy.
 - OpenAPI is auto-generated by FastAPI at runtime — recommend adding explicit `required` arrays on response schemas for Expedia schema_conformance scoring on service_no_llm endpoints.
 
 ## Supplementary Analysis Patterns
@@ -232,8 +239,8 @@ When triaging a reported integration failure, follow this diagnostic sequence us
 
 1. **Reproduce via curl** — send the user's exact query to `POST /chatbot/chat` with matching `client_name` and `persona`. Capture full JSON response including `type`, `confidence`, `rag_used`, and `fallback_used`.
 2. **Check index coverage** — **Grep** Azure Search index contents indirectly by sending queries that should match known docs in `Backend/Input/`. If `rag_used` is consistently false, inspect `index_bytes()` and `generate_embedding()` for credential or deployment errors in server logs.
-3. **Trace issue persistence** — for ISSUE-type queries, **Read** `Backend/issues.json` and confirm the new entry includes `issue_type`, `severity`, `status`, and `rag_metrics.rag_used`.
-4. **Validate frontend contract** — **Read** the calling component in `Frontend/src/pages/AITroubleshooter.tsx` and confirm form field names match backend expectations (`query`, not `message`, unless fallback parsing is intentional).
+3. **Trace issue persistence** — for ISSUE-type queries, confirm chat wrote to Azure Blob `Chatbot/issues.json`; optionally **Read** local `Backend/issues.json` if `/issues/list` should reflect the same data.
+4. **Validate frontend contract** — **Read** `Frontend/src/pages/ClientChatbotPage.tsx` (primary) or `AITroubleshooter.tsx` and confirm form field names match backend expectations (`query`, not `message`, unless fallback parsing is intentional).
 5. **Compare compatibility baseline** — **Read** the static `JPMC_CONFIG` in `Backend/Routers/compatibility.py` and cross-check any product claims in chat answers against this authoritative config object.
 
 For document upload failures, inspect `Backend/Routers/upload.py` error paths: 400 for invalid filename, 404 for missing documents on view/download, 500 for missing Blob credentials. Upload succeeds even when background indexing fails — always verify indexing separately via chat `rag_used` flag.

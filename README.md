@@ -24,11 +24,19 @@ KYC-TechSpec helps integration engineers troubleshoot Cortexa API onboarding iss
 
 ## Base URL
 
+**Standalone (KYC only):**
+
 ```
 http://127.0.0.1:8000
 ```
 
-Frontend dev server: `http://localhost:5174` (proxies to backend)
+**Side-by-side with Expedia eval (recommended when both projects run):**
+
+```
+http://127.0.0.1:8001
+```
+
+Frontend dev server: `http://localhost:5174` — Vite proxies `/api` to the backend port configured in `Frontend/vite.config.ts` (currently **8001** when Expedia uses 8000).
 
 ## Authentication
 
@@ -61,7 +69,7 @@ Frontend dev server: `http://localhost:5174` (proxies to backend)
 | Field | Type | Description |
 |-------|------|-------------|
 | `answer` | string | Final formatted assistant response |
-| `type` | string | `GENERAL`, `INTEGRATION`, or `ISSUE` |
+| `type` | string | `GENERAL`, `INTEGRATION`, or `ISSUE` (may also be `RESOLUTION` at runtime for issue persistence) |
 | `diagnosis` | string | Issue type label (may be empty) |
 | `rootCause` | string | Root cause summary (may be empty) |
 | `confidence` | string | `HIGH` or `LOW` |
@@ -151,13 +159,13 @@ Skill trigger phrases: "troubleshoot Cortexa API integration issues", "analyze K
 
 **Service type (LLM path):** Multi-agent + RAG pipeline
 
-| Agent | Role |
-|-------|------|
+| Agent / step | Role |
+|--------------|------|
 | `classification_agent` | Classifies query as GENERAL, INTEGRATION, or ISSUE |
-| `retriever` | Vector search against Azure Cognitive Search |
+| `retriever` | Vector search via `extract_context()` against Azure Cognitive Search |
 | `fallback_checker_agent` | Decides if retrieved docs are sufficient |
 | `fallback_answer_agent` | Safe generic answer when RAG context is empty |
-| `formatting_agent` | Final user-facing response (business or technical persona) |
+| `_format_answer_direct()` | Final user-facing response (business or technical persona); not an AutoGen agent |
 
 **Execution order:** Input → Classification → Vector retrieval → Fallback check → (Fallback answer OR format from RAG) → JSON response
 
@@ -173,9 +181,9 @@ Skill trigger phrases: "troubleshoot Cortexa API integration issues", "analyze K
 
 | Usage | Model |
 |-------|-------|
-| Agent chat | `gpt-4o-08-06` (Azure deployment) |
-| Embeddings | Azure OpenAI `embedding_deployment` |
-| Vision (screenshots) | Azure OpenAI vision |
+| Agent chat & formatting | Azure deployment from `AZURE_OPENAI_DEPLOYMENT_NAME` in `keys.env` |
+| Embeddings | Azure OpenAI `embedding_deployment` env var |
+| Vision (screenshots) | Same Azure OpenAI resource (`AZURE_OPENAI_DEPLOYMENT_NAME`) |
 | Compatibility analyze | Same Azure deployment (single LLM call) |
 
 Non-LLM endpoints (`/client-config/create`, `/compatibility/jpmc-config`, `/dashboard/`) use zero models.
@@ -195,15 +203,15 @@ Non-LLM endpoints (`/client-config/create`, `/compatibility/jpmc-config`, `/dash
 
 ## OpenAPI
 
-FastAPI auto-generates from the **running service** (not GitHub):
+FastAPI auto-generates from the **running service** (not GitHub). Replace `{PORT}` with your backend port (`8000` standalone, `8001` side-by-side):
 
 | Resource | URL |
 |----------|-----|
-| OpenAPI JSON | `http://127.0.0.1:8000/openapi.json` |
-| Swagger UI | `http://127.0.0.1:8000/docs` |
-| ReDoc | `http://127.0.0.1:8000/redoc` |
+| OpenAPI JSON | `http://127.0.0.1:{PORT}/openapi.json` |
+| Swagger UI | `http://127.0.0.1:{PORT}/docs` |
+| ReDoc | `http://127.0.0.1:{PORT}/redoc` |
 
-Expedia evaluation requires the backend to be running and `/openapi.json` reachable.
+Expedia evaluation requires the backend to be running and `/openapi.json` reachable at the same base URL used in onboarding.
 
 ---
 
@@ -213,9 +221,15 @@ Expedia evaluation requires the backend to be running and `/openapi.json` reacha
 
 ```bash
 cd Backend
-# Configure Backend/keys.env
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install pyautogen==0.9.0   # required by chatbot router; not in requirements.txt
+# Configure Backend/keys.env, then:
+uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
+
+Use port **8001** when Expedia eval backend already occupies **8000**. Use **8000** for KYC-only runs (update `Frontend/vite.config.ts` proxy target to match).
 
 ### Frontend
 
@@ -232,6 +246,15 @@ npm run dev
 - `AZURE_SEARCH_SERVICE_ENDPOINT`, `AZURE_SEARCH_INDEX_NAME`, `AZURE_SEARCH_ADMIN_KEY`
 - `AZURE_BLOB_CONNECTION_STRING`, `AZURE_BLOB_CONTAINER`
 
+### Data stores
+
+| Data | Written by | Location |
+|------|------------|----------|
+| Chat issues (ISSUE/RESOLUTION) | `chatbot.py` | Azure Blob `Chatbot/issues.json` |
+| Issue list API | `issue.py` | Local `Backend/issues.json` |
+| Conversations | `chatbot.py` | Azure Blob `Chatbot/conversation.json` |
+| Client configs | `client_config.py` | Azure Blob `client_data/client_configs.json` |
+
 ---
 
 ## Expedia Onboarding Quick Reference
@@ -240,7 +263,9 @@ npm run dev
 |-------|-------------|-----------------|-------|
 | Category | Service (LLM) | Service (Non-LLM) | Skill |
 | Endpoint | `POST /chatbot/chat` | `POST /client-config/create` | N/A |
-| Base URL | `http://127.0.0.1:8000` | `http://127.0.0.1:8000` | N/A |
+| Base URL | `http://127.0.0.1:8001`* | `http://127.0.0.1:8001`* | N/A |
+
+\*Use `8001` when Expedia eval runs on `8000`; use `8000` for KYC-only.
 | Skill path | N/A | N/A | `.claude/skills/kyc-techspec/` |
 | GitHub sync file | This `README.md` | Copy `docs/expedia/README-SERVICE-NO-LLM.md` to root | Local path recommended |
 

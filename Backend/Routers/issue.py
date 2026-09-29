@@ -11,8 +11,7 @@ from openai import AzureOpenAI
 router = APIRouter()
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "issues.json"
-BASE_DIR = Path(__file__).resolve().parent
-env_path = BASE_DIR / "keys.env"
+env_path = Path(__file__).resolve().parent.parent / "keys.env"
 
 load_dotenv(env_path)
 

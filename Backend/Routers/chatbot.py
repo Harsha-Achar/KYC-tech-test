@@ -38,9 +38,7 @@ TICKET_TO_EMAIL = "sowmya.sri0112@gmail.com"
 
 from pathlib import Path
 
-env_path = Path(
-    r"C:\Users\sowmya\Downloads\Projects\JPMC-TechSpec\Backend\keys.env"
-)
+env_path = Path(__file__).resolve().parent.parent / "keys.env"
 
 load_dotenv(env_path)
 
@@ -68,15 +66,14 @@ AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
 llm_config = {
     "config_list": [
         {
-            "model": "gpt-4o-08-06",  # your deployment name
+            "model": AZURE_OPENAI_DEPLOYMENT_NAME,
             "api_key": AZURE_OPENAI_API_KEY,
-            "base_url": AZURE_OPENAI_ENDPOINT.rstrip("/"),  # ← changed
+            "base_url": AZURE_OPENAI_ENDPOINT.rstrip("/"),
             "api_type": "azure",
             "api_version": AZURE_OPENAI_API_VERSION,
         }
     ],
     "temperature": 0.1,
-    "max_completion_tokens": 8192, 
 }
 
 print("DEPLOYMENT =", AZURE_OPENAI_DEPLOYMENT_NAME)
