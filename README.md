@@ -1,235 +1,112 @@
 # KYC-TechSpec (Affine TechSpec)
 
-FinTech integration support workspace for API client onboarding. Combines a React dashboard with a FastAPI backend providing AI troubleshooting, document ingestion, compatibility analysis, and issue tracking.
-
-This repository supports **three Expedia High Level Evaluation paths**. Choose the type that matches your onboarding configuration.
-
-| Expedia Type | Best For | Primary Artifact | Target Endpoint |
-|--------------|----------|------------------|-----------------|
-| **Service (LLM)** | Multi-agent RAG chat | [`docs/expedia/README-SERVICE-LLM.md`](docs/expedia/README-SERVICE-LLM.md) | `POST /chatbot/chat` |
-| **Service (Non-LLM)** | Deterministic CRUD/config | [`docs/expedia/README-SERVICE-NO-LLM.md`](docs/expedia/README-SERVICE-NO-LLM.md) | `POST /client-config/create` |
-| **Skill** | Claude workflow for KYC analysis | [`.claude/skills/kyc-techspec/SKILL.md`](.claude/skills/kyc-techspec/SKILL.md) | N/A (workflow) |
-
-Full onboarding metadata: [`docs/expedia/ONBOARDING.md`](docs/expedia/ONBOARDING.md)
+FinTech integration support workspace for **Cortexa API client onboarding**. A React dashboard and a FastAPI backend work together for AI-assisted troubleshooting, document ingestion, compatibility analysis, issue tracking, and client configuration.
 
 ---
 
-## Overview
+## What it does
 
-KYC-TechSpec helps integration engineers troubleshoot Cortexa API onboarding issues. Users ask natural-language questions; the backend classifies the query, retrieves relevant documentation from a vector index, orchestrates AutoGen agents, and returns a formatted answer grounded in indexed sources when available.
-
-**Recommended evaluation type:** Service (LLM) — the core product is the multi-agent RAG chat pipeline.
+- **AI chat** — Natural-language questions about integration and product docs; optional error screenshots.
+- **RAG over tech specs** — Upload PDF/DOCX/TXT, chunk, embed, and search Azure Cognitive Search.
+- **Issue tracking** — Classify and persist integration issues and resolutions.
+- **Client onboarding config** — Create and validate client configuration records.
+- **Compatibility** — Analyze configs against Cortexa baselines (LLM-assisted where applicable).
+- **Dashboard** — Summary views for the integration workspace.
 
 ---
 
-## Base URL
-
-**Standalone (KYC only):**
+## Architecture
 
 ```
-http://127.0.0.1:8000
+┌─────────────────┐     HTTP (/api → backend)     ┌──────────────────────────────┐
+│  React (Vite)   │ ────────────────────────────► │  FastAPI (Backend/main.py)   │
+│  Frontend/      │                               │  Routers: chatbot, upload,   │
+└─────────────────┘                               │  issues, client-config, …    │
+                                                  └──────────────┬───────────────┘
+                                                                 │
+                    ┌────────────────────────────────────────────┼────────────────────────┐
+                    ▼                    ▼                       ▼                        ▼
+            Azure OpenAI          Azure Cognitive Search   Azure Blob Storage      Local JSON (some APIs)
+            (chat, embed,         (index: tech-spec)       (issues, conversations,  (e.g. issues list)
+             vision)                                      client configs)
 ```
 
-**Side-by-side with Expedia eval (recommended when both projects run):**
+### Chat pipeline (LLM path)
+
+| Step | Component | Role |
+|------|-----------|------|
+| 1 | `classification_agent` | Classifies query: `GENERAL`, `INTEGRATION`, or `ISSUE` |
+| 2 | Retriever | Vector search via `extract_context()` on Azure Search |
+| 3 | `fallback_checker_agent` | Checks if retrieved context is sufficient |
+| 4 | `fallback_answer_agent` | Safe answer when RAG context is empty |
+| 5 | `_format_answer_direct()` | Final response (business or technical persona) |
+
+**Flow:** Input → classification → retrieval → fallback check → formatted JSON response.
+
+**Ingestion:** Upload → chunk (~1000 chars) → Azure OpenAI embeddings → index → top-K retrieval (default 5).
+
+### Stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend | FastAPI, Python, Microsoft AutoGen (`pyautogen`) |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4 |
+| AI / search | Azure OpenAI, Azure Cognitive Search |
+| Storage | Azure Blob Storage |
+
+### Backend routers (prefixes)
+
+| Router | Prefix | Purpose |
+|--------|--------|---------|
+| `chatbot` | `/chatbot` | AI chat (`POST /chatbot/chat`) |
+| `upload` | `/upload` | Document upload and indexing |
+| `client_config` | `/client-config` | Client onboarding CRUD |
+| `compatibility` | `/compatibility` | Compatibility analysis |
+| `issue` | `/issues` | Issue APIs |
+| `issue_insights` | `/issue-insights` | Issue analytics |
+| `dashboard` | `/dashboard` | Dashboard data |
+| `start_mail` | `/start-mail` | Mail-related flows |
+
+---
+
+## Repository layout
 
 ```
-http://127.0.0.1:8001
+KYC-TechSpec/
+├── Backend/
+│   ├── main.py              # FastAPI app entry
+│   ├── keys.env             # Secrets (not committed)
+│   ├── requirements.txt
+│   └── Routers/             # API modules
+├── Frontend/                # React app
+└── .claude/skills/kyc-techspec/   # Optional Claude skill + references for this domain
 ```
 
-Frontend dev server: `http://localhost:5174` — Vite proxies `/api` to the backend port configured in `Frontend/vite.config.ts` (currently **8001** when Expedia uses 8000).
-
-## Authentication
-
-**Type:** none (local development)
-
-**Header/format:** No authentication headers required.
-
 ---
 
-## Primary Endpoint — Service (LLM)
+## Local development
 
-### POST /chatbot/chat
+### Prerequisites
 
-**Purpose:** AI troubleshooting chat with optional screenshot analysis. **Target endpoint for service_llm evaluation.**
-
-**Content-Type:** `multipart/form-data`
-
-#### Request
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `query` | string | Yes* | User question. Alternatives: `text`, `message`, `prompt` |
-| `user_id` | string | no | Caller identifier. Default: `default_user` |
-| `client_name` | string | no | Client name for issue tracking. Default: `Unknown Client` |
-| `persona` | string | no | `business` or `technical`. Default: `technical` |
-| `image` | file | no | Error screenshot for vision-based text extraction |
-
-#### Response
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `answer` | string | Final formatted assistant response |
-| `type` | string | `GENERAL`, `INTEGRATION`, or `ISSUE` (may also be `RESOLUTION` at runtime for issue persistence) |
-| `diagnosis` | string | Issue type label (may be empty) |
-| `rootCause` | string | Root cause summary (may be empty) |
-| `confidence` | string | `HIGH` or `LOW` |
-| `persona_used` | string | Persona applied |
-| `rag_used` | boolean | Vector retrieval returned context |
-| `fallback_used` | boolean | Fallback agent was invoked |
-
-#### Error Response
-
-| Status | Key | Example |
-|--------|-----|---------|
-| 400 | `detail` | `"Missing query"` |
-
-See [`docs/expedia/README-SERVICE-LLM.md`](docs/expedia/README-SERVICE-LLM.md) for full service_llm documentation including agents, models, and latency.
-
----
-
-## Primary Endpoint — Service (Non-LLM)
-
-### POST /client-config/create
-
-**Purpose:** Create client onboarding configuration with validation. **Target endpoint for service_no_llm evaluation.**
-
-**Content-Type:** `application/json`
-
-#### Request
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `client_name` | string | yes | Client display name |
-| `assigned_to` | string | no | Owner email |
-| `services` | array | no | Service list |
-| `environment` | string | no | Sandbox, Production, etc. |
-| `system_type` | string | no | System classification |
-| `legacy_present` | boolean | no | Legacy system flag |
-| `llm_fallback` | boolean | no | LLM fallback enabled |
-| `industry` | string | no | Industry vertical |
-| `priority` | string | no | Priority level |
-
-#### Response (all fields required)
-
-`client_id`, `client_name`, `assigned_to`, `product`, `services`, `environment`, `system_type`, `legacy_present`, `llm_fallback`, `industry`, `priority`, `created_at`, `updated_at`
-
-#### Error Response
-
-| Status | Key | Example |
-|--------|-----|---------|
-| 400 | `detail` | `"client_name is required"` |
-| 500 | `detail` | Azure Blob configuration missing |
-
-**Alternate non-LLM endpoint:** `GET /compatibility/jpmc-config` — returns static Cortexa baseline config (<50ms, no LLM).
-
-See [`docs/expedia/README-SERVICE-NO-LLM.md`](docs/expedia/README-SERVICE-NO-LLM.md) for full service_no_llm documentation.
-
----
-
-## Skill Evaluation
-
-For skill-based evaluation, use local path:
-
-```
-.claude/skills/kyc-techspec/
-├── SKILL.md
-└── references/
-    ├── architecture.md
-    ├── api-overview.md
-    └── domain-rules.md
-```
-
-Skill trigger phrases: "troubleshoot Cortexa API integration issues", "analyze KYC onboarding documentation", "diagnose FinTech client integration failures".
-
----
-
-## Quality Guarantees
-
-- **Relevancy:** Responses address integration, product, or troubleshooting questions per classification type (GENERAL, INTEGRATION, ISSUE).
-
-- **Groundedness:** When RAG retrieval succeeds, answers use only indexed documentation. No fabricated endpoints, credentials, or policies.
-
-- **Completeness:** Chat responses include `answer`, `type`, `confidence`, `rag_used`, `fallback_used`. Client config responses include all 13 schema fields.
-
-- **Faithfulness:** Retrieved source text preserved through formatting. Insufficient context triggers explicit "not found" messaging rather than guessing.
-
----
-
-## Workflow / Architecture
-
-**Service type (LLM path):** Multi-agent + RAG pipeline
-
-| Agent / step | Role |
-|--------------|------|
-| `classification_agent` | Classifies query as GENERAL, INTEGRATION, or ISSUE |
-| `retriever` | Vector search via `extract_context()` against Azure Cognitive Search |
-| `fallback_checker_agent` | Decides if retrieved docs are sufficient |
-| `fallback_answer_agent` | Safe generic answer when RAG context is empty |
-| `_format_answer_direct()` | Final user-facing response (business or technical persona); not an AutoGen agent |
-
-**Execution order:** Input → Classification → Vector retrieval → Fallback check → (Fallback answer OR format from RAG) → JSON response
-
-**RAG pipeline:** Upload (PDF/DOCX/TXT) → chunk (~1000 chars) → embed (Azure OpenAI) → index (Azure Search `tech-spec`) → retrieve top-K (default 5) on query
-
-**Framework:** FastAPI, Microsoft AutoGen, Azure OpenAI, Azure Cognitive Search, Azure Blob Storage
-
-**Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4
-
----
-
-## Models Used
-
-| Usage | Model |
-|-------|-------|
-| Agent chat & formatting | Azure deployment from `AZURE_OPENAI_DEPLOYMENT_NAME` in `keys.env` |
-| Embeddings | Azure OpenAI `embedding_deployment` env var |
-| Vision (screenshots) | Same Azure OpenAI resource (`AZURE_OPENAI_DEPLOYMENT_NAME`) |
-| Compatibility analyze | Same Azure deployment (single LLM call) |
-
-Non-LLM endpoints (`/client-config/create`, `/compatibility/jpmc-config`, `/dashboard/`) use zero models.
-
----
-
-## Latency Expectations
-
-| Path | Expected p95 |
-|------|-------------|
-| `POST /chatbot/chat` (full pipeline) | 8–15s |
-| `POST /client-config/create` | < 500ms |
-| `GET /compatibility/jpmc-config` | < 50ms |
-| `GET /dashboard/` | < 10ms |
-
----
-
-## OpenAPI
-
-FastAPI auto-generates from the **running service** (not GitHub). Replace `{PORT}` with your backend port (`8000` standalone, `8001` side-by-side):
-
-| Resource | URL |
-|----------|-----|
-| OpenAPI JSON | `http://127.0.0.1:{PORT}/openapi.json` |
-| Swagger UI | `http://127.0.0.1:{PORT}/docs` |
-| ReDoc | `http://127.0.0.1:{PORT}/redoc` |
-
-Expedia evaluation requires the backend to be running and `/openapi.json` reachable at the same base URL used in onboarding.
-
----
-
-## Local Development
+- Python 3.11+ (or version matching your venv)
+- Node.js 18+
+- Azure resources configured in `Backend/keys.env` (see below)
 
 ### Backend
 
 ```bash
 cd Backend
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-pip install pyautogen==0.9.0   # required by chatbot router; not in requirements.txt
-# Configure Backend/keys.env, then:
+pip install pyautogen==0.9.0   # required by chatbot; not listed in requirements.txt
+# Fill in Backend/keys.env, then:
 uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
 
-Use port **8001** when Expedia eval backend already occupies **8000**. Use **8000** for KYC-only runs (update `Frontend/vite.config.ts` proxy target to match).
+Default API base URL: **`http://127.0.0.1:8001`**
+
+Health check: `GET /` → `{"message":"Backend running"}`
 
 ### Frontend
 
@@ -239,34 +116,73 @@ npm install
 npm run dev
 ```
 
-### Environment variables (`Backend/keys.env`)
+Dev UI: **`http://localhost:5174`**
 
-- `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_DEPLOYMENT_NAME`
-- `embedding_deployment`
-- `AZURE_SEARCH_SERVICE_ENDPOINT`, `AZURE_SEARCH_INDEX_NAME`, `AZURE_SEARCH_ADMIN_KEY`
-- `AZURE_BLOB_CONNECTION_STRING`, `AZURE_BLOB_CONTAINER`
-
-### Data stores
-
-| Data | Written by | Location |
-|------|------------|----------|
-| Chat issues (ISSUE/RESOLUTION) | `chatbot.py` | Azure Blob `Chatbot/issues.json` |
-| Issue list API | `issue.py` | Local `Backend/issues.json` |
-| Conversations | `chatbot.py` | Azure Blob `Chatbot/conversation.json` |
-| Client configs | `client_config.py` | Azure Blob `client_data/client_configs.json` |
+The Vite dev server proxies `/api` to the backend URL in `Frontend/vite.config.ts` (default target `http://localhost:8001`). Change the proxy `target` if you run the API on another port.
 
 ---
 
-## Expedia Onboarding Quick Reference
+## Configuration (`Backend/keys.env`)
 
-| Field | Service LLM | Service Non-LLM | Skill |
-|-------|-------------|-----------------|-------|
-| Category | Service (LLM) | Service (Non-LLM) | Skill |
-| Endpoint | `POST /chatbot/chat` | `POST /client-config/create` | N/A |
-| Base URL | `http://127.0.0.1:8001`* | `http://127.0.0.1:8001`* | N/A |
+- **Azure OpenAI:** `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_DEPLOYMENT_NAME`
+- **Embeddings:** `embedding_deployment`
+- **Azure Search:** `AZURE_SEARCH_SERVICE_ENDPOINT`, `AZURE_SEARCH_INDEX_NAME`, `AZURE_SEARCH_ADMIN_KEY`
+- **Blob storage:** `AZURE_BLOB_CONNECTION_STRING`, `AZURE_BLOB_CONTAINER`
 
-\*Use `8001` when Expedia eval runs on `8000`; use `8000` for KYC-only.
-| Skill path | N/A | N/A | `.claude/skills/kyc-techspec/` |
-| GitHub sync file | This `README.md` | Copy `docs/expedia/README-SERVICE-NO-LLM.md` to root | Local path recommended |
+---
 
-See [`docs/expedia/ONBOARDING.md`](docs/expedia/ONBOARDING.md) for complete MetadataStep values, validation checklist, and known gaps.
+## Main APIs (summary)
+
+### `POST /chatbot/chat`
+
+Multipart form: `query` (required; aliases `text`, `message`, `prompt`), optional `user_id`, `client_name`, `persona` (`business` | `technical`), optional `image` (screenshot).
+
+Response includes: `answer`, `type`, `confidence`, `rag_used`, `fallback_used`, and related fields.
+
+### `POST /client-config/create`
+
+JSON body: `client_name` (required), plus optional onboarding fields (`assigned_to`, `services`, `environment`, etc.).
+
+### Other useful routes
+
+- `GET /compatibility/jpmc-config` — static baseline config
+- `GET /dashboard/` — dashboard payload
+- Upload and issue routes under `/upload` and `/issues`
+
+Interactive docs (with backend running): **`http://127.0.0.1:8001/docs`** and **`http://127.0.0.1:8001/openapi.json`**
+
+---
+
+## Data persistence
+
+| Data | Typical location |
+|------|------------------|
+| Chat issues / conversations | Azure Blob (`Chatbot/issues.json`, `Chatbot/conversation.json`) |
+| Client configs | Azure Blob (`client_data/client_configs.json`) |
+| Some issue list data | Local `Backend/issues.json` (issue router) |
+
+---
+
+## Quality characteristics
+
+- **Relevancy** — Answers aligned with query type (general, integration, issue).
+- **Groundedness** — When RAG succeeds, answers lean on indexed documentation.
+- **Completeness** — Chat and config responses expose the fields the API contract defines.
+- **Faithfulness** — Missing context surfaced explicitly instead of inventing endpoints or policies.
+
+---
+
+## Latency (typical, local/cloud dependent)
+
+| Route | Order of magnitude |
+|-------|--------------------|
+| `POST /chatbot/chat` (full agent + RAG) | ~8–15s p95 |
+| `POST /client-config/create` | sub-second |
+| `GET /compatibility/jpmc-config` | tens of ms |
+| `GET /dashboard/` | tens of ms |
+
+---
+
+## Authentication
+
+Local development: **no auth** on the API. Do not expose `keys.env` or production keys in the repo.
